@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Script Analyzer</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main>
+    <h1>Script Analyzer</h1>
+    <textarea id="scriptInput" rows="10" cols="80" placeholder="Paste your script here..."></textarea><br>
+    <button onclick="analyzeScript()">Analyze</button>
+    <pre id="output"></pre>
+
+    <form id="downloadForm" method="POST" action="/api/download" style="display:none;">
+      <input type="hidden" name="script" id="scriptHidden">
+      <input type="hidden" name="analysis" id="analysisHidden">
+      <button type="submit">Download ZIP</button>
+    </form>
+  </main>
+
+  <script>
+    async function analyzeScript() {
+      const script = document.getElementById('scriptInput').value;
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        body: new URLSearchParams({ script })
+      });
+      const data = await res.json();
+      document.getElementById('output').textContent = data.analysis;
+      document.getElementById('scriptHidden').value = script;
+      document.getElementById('analysisHidden').value = data.analysis;
+      document.getElementById('downloadForm').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
