@@ -12,6 +12,11 @@
     <button onclick="analyzeScript()">Analyze</button>
     <pre id="output"></pre>
 
+    <form id="uploadForm" enctype="multipart/form-data">
+  <input type="file" id="fileInput" accept=".txt,.pdf,.doc,.docx" />
+  <button type="button" onclick="uploadAndAnalyze()">Upload & Analyze</button>
+</form>
+
     <form id="downloadForm" method="POST" action="/api/download" style="display:none;">
       <input type="hidden" name="script" id="scriptHidden">
       <input type="hidden" name="analysis" id="analysisHidden">
@@ -20,18 +25,34 @@
   </main>
 
   <script>
-    async function analyzeScript() {
-      const script = document.getElementById('scriptInput').value;
-      const res = await fetch('/api/analyze', {
-        method: 'POST',
-        body: new URLSearchParams({ script })
-      });
-      const data = await res.json();
-      document.getElementById('output').textContent = data.analysis;
-      document.getElementById('scriptHidden').value = script;
-      document.getElementById('analysisHidden').value = data.analysis;
-      document.getElementById('downloadForm').style.display = 'block';
-    }
+   async function uploadAndAnalyze() {
+  const fileInput = document.getElementById('fileInput');
+  if (fileInput.files.length === 0) {
+    alert('Please select a file to upload.');
+    return;
+  }
+
+  const file = fileInput.files[0];
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await fetch('/api/analyze-upload', {
+    method: 'POST',
+    body: formData
+  });
+
+  const data = await res.json();
+
+  if(data.error) {
+    alert('Error: ' + data.error);
+    return;
+  }
+
+  document.getElementById('output').textContent = data.analysis;
+  document.getElementById('scriptHidden').value = data.extracted_text || '';
+  document.getElementById('analysisHidden').value = data.analysis;
+  document.getElementById('downloadForm').style.display = 'block';
+}
   </script>
 </body>
 </html>
